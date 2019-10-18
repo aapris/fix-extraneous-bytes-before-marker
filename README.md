@@ -13,7 +13,7 @@ broken_orig.jpg JPEG 2048x1536 2048x1536+0+0 8-bit sRGB 2.03195MiB 0.000u 0:00.0
 identify: Corrupt JPEG data: 2 extraneous bytes before marker 0xdb `broken_orig.jpg' @ warning/jpeg.c/JPEGWarningHandler/399.
 ```
 
-The original error message originates from [libjpeg](https://www.ijg.org)
+The error message originates from [libjpeg](https://www.ijg.org)
 library.
 
 This corrupted part of EXIF header prevents importing photos into
@@ -28,9 +28,18 @@ So far the best candidate to remove extraneous bytes is this Python script:
 
 Unfortunaltely it didn't work at all in my environment (Python 3.7) and anyway
 it fixes only extraneous bytes before marker 0xd9, so I decided to modify
-it a bit  
+it a bit. 
 
+New version
 [fix-extraneous-bytes-before-marker-0xxx.py](fix-extraneous-bytes-before-marker-0xxx.py)
+**should** remove extraneous bytes before any marker, but I can't be sure, 
+because I have only photos which have 2 bytes before marker `0xdb`.
+Actually `0xdb` exists twice in my photos, but the chunk before first appearance
+is only 1 byte long, so it will be ignored.
+
+NOTE: you use this script at your own risk. 
+Always have backups of your photos and verify
+that photos are unbroken after running the script.  
 
 # Other goals
 
@@ -54,7 +63,9 @@ done
 ```
 
 ## Convert and merge lots of Ozi .plt files into one GPX file
-These files start with string `20`, e.g. `2005-05-01.plt.
+These files start with string `20`, e.g. `2005-05-01.plt`.
+The idea is to add `-f` switch before every filename to make gpsbabel happy.
+
 ```
 gpsbabel -i ozi -f \
   $(echo tracks/2005/*/*.plt|perl -pe 's| tracks/| -f tracks/|g') \
